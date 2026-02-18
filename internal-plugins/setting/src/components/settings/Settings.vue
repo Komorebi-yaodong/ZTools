@@ -57,6 +57,9 @@
       <!-- AI 模型管理 -->
       <AiModels v-if="activeMenu === 'ai-models'" :search-query="props.searchQuery" />
 
+      <!-- 网页快开 -->
+      <WebSearch v-if="activeMenu === 'web-search'" :search-query="props.searchQuery" />
+
       <!-- 安装插件 -->
       <PluginInstaller
         v-if="activeMenu === 'install-plugin'"
@@ -87,6 +90,7 @@ import PluginCenter from './PluginCenter.vue'
 import PluginInstaller from './PluginInstaller.vue'
 import PluginMarket from './PluginMarket.vue'
 import SyncSettings from './SyncSettings.vue'
+import WebSearch from './WebSearch.vue'
 import AboutPage from './AboutPage.vue'
 
 // Props
@@ -118,6 +122,7 @@ interface MenuItem {
     | 'brain'
     | 'info'
     | 'terminal'
+    | 'search'
   label: string
 }
 
@@ -128,6 +133,7 @@ const menuItems: MenuItem[] = [
   { id: 'plugins', icon: 'plugin', label: '已安装插件' },
   { id: 'market', icon: 'store', label: '插件市场' },
   { id: 'ai-models', icon: 'brain', label: 'AI 模型' },
+  { id: 'web-search', icon: 'search', label: '网页快开' },
   { id: 'data', icon: 'database', label: '我的数据' },
   { id: 'all-commands', icon: 'list', label: '所有指令' },
   { id: 'local-launch', icon: 'folder', label: '本地启动' },
