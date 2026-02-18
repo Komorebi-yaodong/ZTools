@@ -211,8 +211,8 @@ async function handleArrowKeydown(
 
 // 启动 Tab 键目标指令
 function launchTabTarget(target: string, text: string): void {
-  const commands = commandDataStore.commands
-  let matchedCommand: typeof commands[number] | null = null
+  const commands = [...commandDataStore.regexCommands, ...commandDataStore.commands]
+  let matchedCommand: (typeof commands)[number] | null = null
 
   const parts = target.split('/')
   if (parts.length === 2) {
@@ -247,7 +247,7 @@ function launchTabTarget(target: string, text: string): void {
     cmdType: matchedCommand.cmdType || 'text',
     param: {
       payload: text,
-      type: 'text'
+      type: matchedCommand.cmdType || 'text'
     }
   })
 }
