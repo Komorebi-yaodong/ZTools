@@ -103,6 +103,13 @@ export class InternalPluginAPI {
       return await (pluginsAPI as any).getAllPlugins()
     })
 
+    ipcMain.handle('internal:select-plugin-file', async (event) => {
+      if (!requireInternalPlugin(this.pluginManager, event)) {
+        throw new PermissionDeniedError('internal:select-plugin-file')
+      }
+      return await (pluginsAPI as any).selectPluginFile()
+    })
+
     ipcMain.handle('internal:import-plugin', async (event) => {
       if (!requireInternalPlugin(this.pluginManager, event)) {
         throw new PermissionDeniedError('internal:import-plugin')
@@ -474,6 +481,19 @@ export class InternalPluginAPI {
       this.mainWindow?.webContents.send('update-tab-target', target)
       return { success: true }
     })
+
+    // 通知主渲染进程更新悬浮球双击目标指令
+    ipcMain.handle(
+      'internal:update-floating-ball-double-click-command',
+      async (event, command: string) => {
+        if (!requireInternalPlugin(this.pluginManager, event)) {
+          throw new PermissionDeniedError('internal:update-floating-ball-double-click-command')
+        }
+        // 广播到主渲染进程
+        this.mainWindow?.webContents.send('update-floating-ball-double-click-command', command)
+        return { success: true }
+      }
+    )
 
     // 通知主渲染进程更新本地应用搜索配置
     ipcMain.handle('internal:update-local-app-search', async (event, enabled: boolean) => {

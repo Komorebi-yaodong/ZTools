@@ -50,6 +50,7 @@ declare global {
           }>
         >
         getRunningPlugins: () => Promise<string[]>
+        selectPluginFile: () => Promise<{ success: boolean; filePath?: string; error?: string }>
         importPlugin: () => Promise<{ success: boolean; error?: string }>
         readPluginInfoFromZip: (zipPath: string) => Promise<{
           success: boolean
@@ -165,6 +166,7 @@ declare global {
         updatePinnedRows: (rows: number) => Promise<void>
         updateSearchMode: (searchMode: 'aggregate' | 'list') => Promise<void>
         updateTabTarget: (target: string) => Promise<void>
+        updateFloatingBallDoubleClickCommand: (command: string) => Promise<void>
         setTheme: (theme: string) => Promise<void>
         updatePrimaryColor: (primaryColor: string, customColor?: string) => Promise<void>
         setTrayIconVisible: (visible: boolean) => Promise<void>
