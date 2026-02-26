@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron'
-import { WINDOW_DEFAULT_HEIGHT, WINDOW_INITIAL_HEIGHT } from '../../common/constants.js'
+import { WINDOW_DEFAULT_HEIGHT, WINDOW_INITIAL_HEIGHT, WINDOW_WIDTH } from '../../common/constants.js'
 import windowManager from '../../managers/windowManager.js'
 
 // 窗口材质类型
@@ -31,14 +31,14 @@ export class WindowAPI {
       if (!this.mainWindow) return
 
       if (lock) {
-        // 锁定：记录当前尺寸
-        const [width, height] = this.mainWindow.getSize()
-        this.lockedSize = { width, height }
+        // 锁定：记录当前尺寸（宽度使用固定常量，避免多显示器 DPI 缩放导致尺寸漂移）
+        const [, height] = this.mainWindow.getSize()
+        this.lockedSize = { width: WINDOW_WIDTH, height }
       } else {
         // 解锁：验证并恢复尺寸
         if (this.lockedSize) {
-          const [width, height] = this.mainWindow.getSize()
-          if (width !== this.lockedSize.width || height !== this.lockedSize.height) {
+          const [, height] = this.mainWindow.getSize()
+          if (WINDOW_WIDTH !== this.lockedSize.width || height !== this.lockedSize.height) {
             this.mainWindow.setSize(this.lockedSize.width, this.lockedSize.height)
           }
           this.lockedSize = null
@@ -74,7 +74,8 @@ export class WindowAPI {
 
   public resizeWindow(height: number): void {
     if (this.mainWindow) {
-      const [width] = this.mainWindow.getSize()
+      // 使用固定宽度常量，避免多显示器 DPI 缩放导致 getSize() 返回被缩放的值
+      const width = WINDOW_WIDTH
       // 限制高度范围: 最小初始高度, 最大高度
       const newHeight = Math.max(WINDOW_INITIAL_HEIGHT, Math.min(height, WINDOW_DEFAULT_HEIGHT))
 

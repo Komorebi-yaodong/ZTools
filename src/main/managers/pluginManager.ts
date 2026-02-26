@@ -6,7 +6,7 @@ import hideWindowHtml from '../../../resources/hideWindow.html?asset'
 
 import mainPreload from '../../../resources/preload.js?asset'
 import api from '../api'
-import { WINDOW_INITIAL_HEIGHT, WINDOW_DEFAULT_HEIGHT } from '../common/constants'
+import { WINDOW_INITIAL_HEIGHT, WINDOW_DEFAULT_HEIGHT, WINDOW_WIDTH } from '../common/constants'
 import detachedWindowManager, { DETACHED_TITLEBAR_HEIGHT } from '../core/detachedWindowManager'
 import { GLOBAL_SCROLLBAR_CSS } from '../core/globalStyles'
 import { isInternalPlugin } from '../core/internalPlugins'
@@ -307,8 +307,8 @@ class PluginManager {
 
       this.mainWindow.contentView.addChildView(this.pluginView)
 
-      // 设置初始布局
-      const [windowWidth] = this.mainWindow.getSize()
+      // 设置初始布局（使用固定宽度常量，避免多显示器 DPI 缩放导致尺寸漂移）
+      const windowWidth = WINDOW_WIDTH
       let initialViewHeight: number | null = null
 
       // 设置初始高度为 1px，避免节流
@@ -735,8 +735,8 @@ class PluginManager {
     // 计算总窗口高度
     const totalHeight = height + mainContentHeight
 
-    // 获取当前窗口宽度
-    const [width] = this.mainWindow.getSize()
+    // 使用固定宽度常量，避免多显示器 DPI 缩放导致 getSize() 返回被缩放的值
+    const width = WINDOW_WIDTH
 
     // 通过 api.resizeWindow 调整主窗口大小
     api.resizeWindow(totalHeight)
