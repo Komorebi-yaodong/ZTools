@@ -7,6 +7,7 @@ import { WindowManager } from '../../core/native/index.js'
  */
 export class PluginInputAPI {
   private pluginManager: PluginManager | null = null
+  private foundInPageListeners = new WeakSet<Electron.WebContents>()
 
   public init(pluginManager: PluginManager): void {
     this.pluginManager = pluginManager
@@ -48,6 +49,8 @@ export class PluginInputAPI {
         if (webContents.isDestroyed()) {
           return { success: false, error: '页面已销毁' }
         }
+        // 确保监听 found-in-page 事件以转发结果
+        this.ensureFoundInPageListener(webContents)
         const requestId = webContents.findInPage(text, options)
         return { success: true, requestId }
       } catch (error: unknown) {
@@ -104,6 +107,19 @@ export class PluginInputAPI {
         error: error instanceof Error ? error.message : '未知错误'
       }
     }
+  }
+
+  /**
+   * 确保 webContents 上注册了 found-in-page 事件监听，避免重复注册
+   */
+  private ensureFoundInPageListener(webContents: Electron.WebContents): void {
+    if (this.foundInPageListeners.has(webContents)) return
+    this.foundInPageListeners.add(webContents)
+    webContents.on('found-in-page', (_event, result) => {
+      if (!webContents.isDestroyed()) {
+        webContents.send('found-in-page-result', result)
+      }
+    })
   }
 
   private simulateKeyboardTap(key: string, modifiers: string[] = []): boolean {

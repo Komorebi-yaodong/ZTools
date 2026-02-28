@@ -17,6 +17,7 @@ const mainPushCallbacks = []
 const hotkeyRecordedCallbacks = []
 const windowMaterialChangeCallbacks = []
 const logEntriesCallbacks = []
+const foundInPageCallbacks = []
 
 // 获取操作系统类型
 const osType = electron.ipcRenderer.sendSync('get-os-type')
@@ -43,6 +44,17 @@ window.ztools = {
   findInPage: (text, options) => electron.ipcRenderer.invoke('find-in-page', text, options),
   // 停止查找
   stopFindInPage: (action = 'clearSelection') => electron.ipcRenderer.invoke('stop-find-in-page', action),
+  // 监听页面查找结果
+  onFindInPageResult: (callback) => {
+    if (callback && typeof callback === 'function') {
+      foundInPageCallbacks.push(callback)
+    }
+  },
+  // 取消监听页面查找结果
+  offFindInPageResult: (callback) => {
+    const index = foundInPageCallbacks.indexOf(callback)
+    if (index > -1) foundInPageCallbacks.splice(index, 1)
+  },
   // 模拟键盘按键
   simulateKeyboardTap: (key, ...modifiers) => {
     console.log('插件请求模拟键盘按键:', { key, modifiers })
@@ -845,4 +857,9 @@ electron.ipcRenderer.on('update-window-material', (event, material) => {
 // 监听主进程推送的调试日志
 electron.ipcRenderer.on('log-entries', (event, entries) => {
   logEntriesCallbacks.forEach((cb) => cb(entries))
+})
+
+// 监听页面内查找结果
+electron.ipcRenderer.on('found-in-page-result', (event, result) => {
+  foundInPageCallbacks.forEach((cb) => cb(result))
 })
