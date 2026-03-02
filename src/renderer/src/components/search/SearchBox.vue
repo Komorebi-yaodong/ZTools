@@ -448,8 +448,12 @@ function keydownEvent(
     return
   }
 
-  // 如果输入框有选中的文字,不触发列表导航
-  if (inputRef.value && inputRef.value.selectionStart !== inputRef.value.selectionEnd) {
+  // 如果输入框有选中的文字,不触发列表导航（仅搜索模式下生效，插件模式下需要转发给插件）
+  if (
+    props.currentView !== 'plugin' &&
+    inputRef.value &&
+    inputRef.value.selectionStart !== inputRef.value.selectionEnd
+  ) {
     event.stopPropagation()
     return
   }
