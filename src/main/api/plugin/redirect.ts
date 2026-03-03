@@ -193,13 +193,14 @@ export class PluginRedirectAPI {
     }
     console.log('[Redirect] 跳转可以直接打开插件:', launchOptions)
 
+    // 先返回主页面
+    this.toSearchPage()
+
     // 发送 ipc-launch 到渲染进程
     this.mainWindow?.webContents.send('ipc-launch', launchOptions)
   }
 
-  private redirectSearch(cmdName: string, payload: any): void {
-    console.log('[Redirect] 跳转到搜索页:', { cmdName, payload })
-
+  private toSearchPage(): void {
     // 先返回主页面
     if (this.pluginManager?.getCurrentPluginPath() !== null) {
       console.log('[Redirect] 检测到插件正在显示，先隐藏插件并返回搜索页')
@@ -207,6 +208,12 @@ export class PluginRedirectAPI {
       // 通知渲染进程返回搜索页面
       windowManager.notifyBackToSearch()
     }
+  }
+
+  private redirectSearch(cmdName: string, payload: any): void {
+    console.log('[Redirect] 跳转到搜索页:', { cmdName, payload })
+
+    this.toSearchPage()
 
     // 然后再发送跳转搜索的事件
     this.mainWindow?.webContents.send('redirect-search', {
