@@ -232,7 +232,7 @@ onUnmounted(() => {
             </div>
 
             <button class="icon-btn" title="查看文档">
-              <div class="i-z-search font-size-24px" />
+              <div class="i-z-search font-size-18px" />
             </button>
           </div>
         </div>

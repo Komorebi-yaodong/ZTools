@@ -180,19 +180,19 @@ onMounted(() => {
                   <div class="i-z-search font-size-16px"></div>
                 </div>
                 <h3 class="engine-name">{{ engine.name }}</h3>
-                <label class="toggle toggle-sm">
-                  <input
-                    type="checkbox"
-                    :checked="engine.enabled"
-                    @change="handleToggleEnabled(engine)"
-                  />
-                  <span class="toggle-slider"></span>
-                </label>
               </div>
               <div class="engine-url">{{ engine.url }}</div>
             </div>
 
             <div class="engine-actions">
+              <label class="toggle toggle-sm">
+                <input
+                  type="checkbox"
+                  :checked="engine.enabled"
+                  @change="handleToggleEnabled(engine)"
+                />
+                <span class="toggle-slider"></span>
+              </label>
               <button
                 class="icon-btn edit-btn"
                 title="编辑"
