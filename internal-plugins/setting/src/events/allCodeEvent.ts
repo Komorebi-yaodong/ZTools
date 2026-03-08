@@ -70,3 +70,7 @@ addZtoolsCodeEventListener('function.install-plugin', (e) => {
     jumpFunctionPluginInstaller({ installFilePath: installFilePaths[0] })
   }
 })
+
+addZtoolsCodeEventListener('function.exit', () => {
+  void window.ztools.internal.quitApp()
+})
