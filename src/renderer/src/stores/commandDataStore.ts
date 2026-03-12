@@ -412,10 +412,10 @@ export const useCommandDataStore = defineStore('commandData', () => {
       ])
 
       // 处理本地应用指令
-      const appItems = rawApps.map((app) => {
+      const appItems = rawApps.flatMap((app) => {
         // 类型断言：后端可能返回扩展字段（type, subType）
         const extendedApp = app as any
-        return {
+        const baseApp = {
           ...app,
           // 保留已有的 type 和 subType（用于内置指令），否则使用默认值
           type: extendedApp.type || ('direct' as const),
@@ -427,6 +427,26 @@ export const useCommandDataStore = defineStore('commandData', () => {
             .replace(/\s+/g, '')
             .toLowerCase()
         }
+        const result = [baseApp]
+        // 如果有别名（如本地化名称），为每个别名生成一个独立的指令
+        if (extendedApp.aliases && Array.isArray(extendedApp.aliases)) {
+          for (const alias of extendedApp.aliases) {
+            if (alias && alias !== extendedApp.name) {
+              result.push({
+                ...baseApp,
+                name: alias,
+                pinyin: pinyin(alias, { toneType: 'none', type: 'string' })
+                  .replace(/\s+/g, '')
+                  .toLowerCase(),
+                pinyinAbbr: pinyin(alias, { pattern: 'first', toneType: 'none', type: 'string' })
+                  .replace(/\s+/g, '')
+                  .toLowerCase()
+              })
+            }
+          }
+        }
+
+        return result
       })
 
       // 处理插件：每个 cmd 转换为一个独立指令
@@ -627,7 +647,6 @@ export const useCommandDataStore = defineStore('commandData', () => {
       fuse.value = new Fuse(commands.value, {
         keys: [
           { name: 'name', weight: 2 }, // 名称权重最高
-          { name: 'aliases', weight: 1.8 }, // 本地化别名
           { name: 'pinyin', weight: 1.5 }, // 拼音
           { name: 'pinyinAbbr', weight: 1 }, // 拼音首字母
           { name: 'acronym', weight: 1.5 } // 英文首字母缩写
@@ -681,7 +700,6 @@ export const useCommandDataStore = defineStore('commandData', () => {
         ? new Fuse(commandList, {
             keys: [
               { name: 'name', weight: 2 },
-              { name: 'aliases', weight: 1.8 },
               { name: 'pinyin', weight: 1.5 },
               { name: 'pinyinAbbr', weight: 1 },
               { name: 'acronym', weight: 1.5 }
