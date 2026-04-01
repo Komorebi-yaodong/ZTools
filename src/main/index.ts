@@ -2,6 +2,7 @@ import { platform } from '@electron-toolkit/utils'
 import { app, BrowserWindow, session, webContents } from 'electron'
 import log from 'electron-log'
 import path from 'path'
+import lmdbInstance from './core/lmdb/lmdbInstance'
 import api from './api/index'
 import pluginsAPI from './api/renderer/plugins'
 import appWatcher from './appWatcher'
@@ -61,6 +62,18 @@ app.on('open-file', (event, filePath) => {
 
 // ========== 注册自定义协议为特权协议（必须在 app.ready 之前调用）==========
 registerIconScheme()
+
+// ========== GPU 加速控制（必须在 app.ready 之前）==========
+// app.disableHardwareAcceleration() 只能在 app ready 之前生效，所以需要提前直接读数据库
+try {
+  const settingsDoc = lmdbInstance.get('ZTOOLS/settings-general')
+  if (settingsDoc?.data?.disableGpuAcceleration === true) {
+    app.disableHardwareAcceleration()
+    console.log('[Main] 已禁用 GPU 硬件加速（用户设置）')
+  }
+} catch {
+  // 读取失败时忽略，保持默认行为（GPU 加速开启）
+}
 
 // 配置 electron-log
 log.transports.file.level = 'debug'

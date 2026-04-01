@@ -675,6 +675,8 @@ export class PluginManager {
         view.webContents.insertCSS(GLOBAL_SCROLLBAR_CSS)
         await this.processPluginMode(pluginPath, featureCode, view, assembly)
         this.sendPluginLoadedEvent(pluginConfig.name, pluginPath)
+        // 修复 Windows 首次进入插件时的白屏：新建视图同样需要触发重绘
+        this.forceRepaintView(view)
         this.assemblyCoordinator.trace('create-new-view-dom-ready-finish', {
           assemblyId: assembly?.id,
           pluginPath,
@@ -1209,14 +1211,24 @@ export class PluginManager {
 
   /**
    * 强制重绘 WebContentsView（修复部分 Windows 系统白屏问题）
-   * 通过 bounds 微调迫使 Chromium compositor 重新合成 surface
+   * 通过 bounds 微调迫使 Chromium compositor 重新合成 surface。
+   *
+   * 关键：两次 setBounds 必须跨 event loop tick 执行。
+   * 若在同一 tick 内同步调用，Chromium compositor 会合并两次操作，
+   * 只取最终值在下次 vsync 渲染，+1px 中间状态从未触达 GPU 合成阶段，修复失效。
+   * 用 setImmediate 将第二次调用推入下一 tick，使两次变化各自落在不同 vsync 周期，
+   * 从而确保第一次 +1px 真正触发 compositor 重绘。
    */
   private forceRepaintView(view: WebContentsView): void {
     if (view.webContents.isDestroyed()) return
     const bounds = view.getBounds()
     if (bounds.height <= 0) return
     view.setBounds({ ...bounds, height: bounds.height + 1 })
-    view.setBounds(bounds)
+    setImmediate(() => {
+      if (!view.webContents.isDestroyed()) {
+        view.setBounds(bounds)
+      }
+    })
   }
 
   /**
