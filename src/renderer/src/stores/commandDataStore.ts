@@ -92,7 +92,6 @@ export interface Command {
   pluginSource?: PluginSource // 插件来源（安装版或开发版）
   pluginTitle?: string // 插件标题（仅插件类型有效）
   pluginExplain?: string // 插件功能说明
-  devBadge?: 'DEV' // 开发版角标
   matchCmd?: MatchCmd // 匹配指令配置（regex 或 over 或 img 或 files）
   cmdType?: 'text' | 'regex' | 'over' | 'img' | 'files' // cmd类型
   mainPush?: boolean // 是否为 mainPush 功能（搜索时动态查询插件获取结果）
@@ -120,8 +119,6 @@ export interface MainPushFeature {
   pluginSource?: PluginSource
   /** 插件 Logo。 */
   pluginLogo: string
-  /** 开发版角标。 */
-  devBadge?: 'DEV'
   /** 功能编码。 */
   featureCode: string
   /** 功能说明。 */
@@ -615,7 +612,6 @@ export const useCommandDataStore = defineStore('commandData', () => {
       for (const plugin of enabledPlugins) {
         if (plugin.features && Array.isArray(plugin.features) && plugin.features.length > 0) {
           const pluginSource: PluginSource = plugin.isDevelopment ? 'development' : 'installed'
-          const devBadge = plugin.isDevelopment ? 'DEV' : undefined
           // 检查是否有 feature 的 cmd 名称与插件名称相同
           const hasPluginNameCmd = plugin.features.some((feature: any) =>
             feature.cmds?.some(
@@ -654,7 +650,6 @@ export const useCommandDataStore = defineStore('commandData', () => {
               pluginSource,
               pluginTitle: plugin.title,
               pluginExplain: defaultFeatureExplain || plugin.description,
-              devBadge,
               pinyin: pinyin(plugin.name, { toneType: 'none', type: 'string' })
                 .replace(/\s+/g, '')
                 .toLowerCase(),
@@ -682,7 +677,6 @@ export const useCommandDataStore = defineStore('commandData', () => {
                   pluginName: plugin.name,
                   pluginSource,
                   pluginLogo: plugin.logo || '',
-                  devBadge,
                   featureCode: feature.code,
                   featureExplain: feature.explain || '',
                   featureIcon: featureIcon,
@@ -709,7 +703,6 @@ export const useCommandDataStore = defineStore('commandData', () => {
                     pluginSource,
                     pluginTitle: plugin.title,
                     pluginExplain: feature.explain,
-                    devBadge,
                     matchCmd: cmd,
                     cmdType: cmd.type, // 标记匹配类型
                     mainPush: isMainPush,
@@ -738,7 +731,6 @@ export const useCommandDataStore = defineStore('commandData', () => {
                         pluginSource,
                         pluginTitle: plugin.title,
                         pluginExplain: feature.explain,
-                        devBadge,
                         cmdType: 'text', // 标记为文本类型
                         mainPush: isMainPush,
                         pinyin: pinyin(cmdName, { toneType: 'none', type: 'string' })
@@ -1254,8 +1246,7 @@ export const useCommandDataStore = defineStore('commandData', () => {
         featureCode: cmd.featureCode, // 保存 featureCode
         pluginExplain: cmd.pluginExplain, // 保存插件说明
         pluginName: cmd.pluginName,
-        pluginSource: cmd.pluginSource,
-        devBadge: cmd.devBadge
+        pluginSource: cmd.pluginSource
       }))
 
       await window.ztools.dbPut(PINNED_DOC_ID, cleanData)

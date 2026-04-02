@@ -14,7 +14,6 @@ interface MatchInfo {
 interface CommandLike extends CommandIdLike {
   path: string
   pluginSource?: 'installed' | 'development'
-  devBadge?: 'DEV'
   subType?: string
   [key: string]: any
 }

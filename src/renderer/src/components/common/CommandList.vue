@@ -34,7 +34,7 @@
             <div v-else class="app-icon-placeholder">
               {{ app.name.charAt(0).toUpperCase() }}
             </div>
-            <span v-if="app.devBadge" class="app-dev-badge">{{ app.devBadge }}</span>
+            <span v-if="app.pluginSource === 'development'" class="app-dev-badge">DEV</span>
           </div>
           <!-- eslint-disable-next-line vue/no-v-html -->
           <span class="app-name" v-html="getHighlightedName(app)"></span>
@@ -67,7 +67,7 @@
           <div v-else class="app-icon-placeholder">
             {{ app.name.charAt(0).toUpperCase() }}
           </div>
-          <span v-if="app.devBadge" class="app-dev-badge">{{ app.devBadge }}</span>
+          <span v-if="app.pluginSource === 'development'" class="app-dev-badge">DEV</span>
         </div>
         <!-- eslint-disable-next-line vue/no-v-html -->
         <span class="app-name" v-html="getHighlightedName(app)"></span>

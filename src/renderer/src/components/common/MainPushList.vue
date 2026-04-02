@@ -4,7 +4,7 @@
       <div class="section-title-row">
         <div class="section-icon-wrap">
           <img v-if="icon" :src="icon" class="section-icon" alt="" draggable="false" />
-          <span v-if="devBadge" class="section-dev-badge">{{ devBadge }}</span>
+          <span v-if="pluginSource === 'development'" class="section-dev-badge">DEV</span>
         </div>
         <div class="section-title">{{ title }}</div>
       </div>
@@ -44,7 +44,7 @@ import { highlightSubstring } from '../../utils/highlight'
 interface Props {
   title: string
   icon?: string // 标题行图标
-  devBadge?: 'DEV'
+  pluginSource?: 'installed' | 'development'
   items: MainPushItem[]
   selectedIndex?: number
   searchQuery?: string // 搜索查询（用于高亮）
@@ -53,7 +53,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   selectedIndex: -1,
   icon: '',
-  devBadge: undefined,
+  pluginSource: 'installed',
   searchQuery: ''
 })
 

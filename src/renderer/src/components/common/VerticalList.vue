@@ -10,7 +10,7 @@
     >
       <div class="item-icon">
         <img v-if="app.icon" :src="app.icon" alt="" draggable="false" />
-        <span v-if="app.devBadge" class="item-dev-badge">{{ app.devBadge }}</span>
+        <span v-if="app.pluginSource === 'development'" class="item-dev-badge">DEV</span>
       </div>
       <div class="item-content">
         <!-- eslint-disable-next-line vue/no-v-html -->

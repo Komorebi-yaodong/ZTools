@@ -572,8 +572,7 @@ async function handleAppContextMenu(
         featureCode: app.featureCode,
         pluginName: app.pluginName,
         pluginExplain: app.pluginExplain,
-        pluginSource: app.pluginSource,
-        devBadge: app.devBadge
+        pluginSource: app.pluginSource
       })}`,
       label: '固定到搜索框'
     })
@@ -596,7 +595,6 @@ async function handleAppContextMenu(
         pluginName: app.pluginName,
         pluginExplain: app.pluginExplain,
         pluginSource: app.pluginSource,
-        devBadge: app.devBadge,
         cmdType: app.cmdType
       })}`,
       label: '固定到超级面板'

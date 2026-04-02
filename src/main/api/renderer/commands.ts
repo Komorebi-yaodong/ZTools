@@ -661,7 +661,6 @@ export class AppsAPI {
               // 搜索层会将安装版与开发版视为两个变体，历史记录也必须带上 source 才能区分。
               pluginSource: plugin.isDevelopment ? 'development' : 'installed',
               pluginExplain: feature?.explain || '',
-              devBadge: plugin.isDevelopment ? 'DEV' : undefined,
               cmdType: cmdType || 'text' // ✅ 添加 cmdType
             }
           } catch (error) {
@@ -754,7 +753,6 @@ export class AppsAPI {
         history[existingIndex].pluginName = appInfo.pluginName
         history[existingIndex].pluginSource = appInfo.pluginSource
         history[existingIndex].pluginExplain = appInfo.pluginExplain
-        history[existingIndex].devBadge = appInfo.devBadge
       } else {
         // 新记录
         history.push({
@@ -951,8 +949,7 @@ export class AppsAPI {
         pinyin: app.pinyin,
         pinyinAbbr: app.pinyinAbbr,
         pluginName: app.pluginName,
-        pluginSource: app.pluginSource,
-        devBadge: app.devBadge
+        pluginSource: app.pluginSource
       })
 
       databaseAPI.dbPut('pinned-commands', pinnedApps)
@@ -1012,8 +1009,7 @@ export class AppsAPI {
         pinyin: app.pinyin,
         pinyinAbbr: app.pinyinAbbr,
         pluginName: app.pluginName,
-        pluginSource: app.pluginSource,
-        devBadge: app.devBadge
+        pluginSource: app.pluginSource
       }))
 
       databaseAPI.dbPut('pinned-commands', cleanData)
@@ -1137,7 +1133,7 @@ export class AppsAPI {
       }
 
       // 处理插件指令。
-      // 这里保留 pluginSource/devBadge，使安装版与开发版同名命令能够同时参与搜索与展示。
+      // pluginSource 用于区分安装版与开发版同名插件。
       for (const plugin of plugins) {
         if (!plugin.features || !Array.isArray(plugin.features)) {
           continue
@@ -1161,7 +1157,6 @@ export class AppsAPI {
                 pluginSource: plugin.isDevelopment ? 'development' : 'installed',
                 pluginTitle: plugin.title,
                 pluginExplain: feature.explain,
-                devBadge: plugin.isDevelopment ? 'DEV' : undefined,
                 cmdType: 'text'
               })
             } else if (typeof cmd === 'object') {
@@ -1176,7 +1171,6 @@ export class AppsAPI {
                 pluginSource: plugin.isDevelopment ? 'development' : 'installed',
                 pluginTitle: plugin.title,
                 pluginExplain: feature.explain,
-                devBadge: plugin.isDevelopment ? 'DEV' : undefined,
                 cmdType: cmd.type,
                 matchCmd: {
                   type: cmd.type,

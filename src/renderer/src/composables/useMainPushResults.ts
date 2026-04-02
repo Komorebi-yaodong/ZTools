@@ -25,8 +25,6 @@ export interface MainPushGroup {
   pluginSource?: 'installed' | 'development'
   /** 插件 Logo。 */
   pluginLogo: string
-  /** 开发版角标。 */
-  devBadge?: 'DEV'
   /** 产生命中的功能编码。 */
   featureCode: string
   /** 功能说明文案。 */
@@ -133,7 +131,6 @@ export function useMainPushResults(props: UseMainPushResultsProps): {
         pluginName: r.feature.pluginName,
         pluginSource: r.feature.pluginSource,
         pluginLogo: r.feature.pluginLogo,
-        devBadge: r.feature.devBadge,
         featureCode: r.feature.featureCode,
         featureExplain: r.feature.featureExplain,
         featureIcon: r.feature.featureIcon,
