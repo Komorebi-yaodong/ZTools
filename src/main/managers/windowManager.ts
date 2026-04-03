@@ -79,6 +79,7 @@ class WindowManager {
   private isRestoringFocus: boolean = false // 是否正在恢复焦点状态（防止 focus 事件监听器干扰）
   private suppressBlurHide: boolean = false // 临时抑制 blur 事件隐藏窗口（文件关联打开等场景）
   private lastBlurHideTime: number = 0 // blur 导致隐藏窗口的时间戳（用于解决托盘点击竞态）
+  private blurHideTimer: ReturnType<typeof setTimeout> | null = null // Linux blur 延迟隐藏定时器
   private appShortcuts: Map<string, string> = new Map() // 应用快捷键映射表 (快捷键 -> 目标指令)
   // 应用快捷键触发时携带的当前输入上下文
   private appShortcutLaunchContext: AppShortcutLaunchContext = {
@@ -268,8 +269,49 @@ class WindowManager {
 
     this.mainWindow.on('blur', () => {
       if (this.suppressBlurHide) return
-      this.lastBlurHideTime = Date.now()
-      this.hideWindow(false)
+
+      if (platform.isLinux) {
+        // Linux/X11 上 blur 事件过于敏感：
+        // 1. type:'panel' 窗口会随鼠标移出触发 blur（focus-follows-mouse）
+        // 2. 插件 WebContentsView 获焦也会触发 blur
+        // 策略：延迟 150ms，排除以下两种"误触"后再真正隐藏：
+        //   a) 插件视图拥有焦点（应用内部焦点跳转）
+        //   b) 鼠标仍在窗口矩形范围内（focus-follows-mouse 滑出）
+        if (this.blurHideTimer) {
+          clearTimeout(this.blurHideTimer)
+          this.blurHideTimer = null
+        }
+        this.blurHideTimer = setTimeout(() => {
+          this.blurHideTimer = null
+
+          // 主窗口重新获焦 → 不隐藏
+          if (this.mainWindow?.isFocused()) return
+
+          // 插件视图持有焦点（应用内部切换）→ 不隐藏
+          if (pluginManager.isPluginViewFocused()) return
+
+          // 鼠标仍在窗口区域内（focus-follows-mouse 触发的 blur）→ 不隐藏
+          if (this.mainWindow) {
+            const [winX, winY] = this.mainWindow.getPosition()
+            const [winW, winH] = this.mainWindow.getSize()
+            const cursor = screen.getCursorScreenPoint()
+            const isInsideWindow =
+              cursor.x >= winX &&
+              cursor.x <= winX + winW &&
+              cursor.y >= winY &&
+              cursor.y <= winY + winH
+            if (isInsideWindow) return
+          }
+
+          // 以上情况均不满足 → 用户真的点击了其他窗口，隐藏
+          this.lastBlurHideTime = Date.now()
+          this.hideWindow(false)
+        }, 150)
+      } else {
+        // macOS / Windows：原有行为不变
+        this.lastBlurHideTime = Date.now()
+        this.hideWindow(false)
+      }
     })
 
     this.mainWindow.on('show', () => {
