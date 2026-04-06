@@ -155,6 +155,9 @@ const api = {
   onLocalShortcutsChanged: (callback: () => void) => {
     ipcRenderer.on('local-shortcuts-changed', callback)
   },
+  onCommandAliasesChanged: (callback: () => void) => {
+    ipcRenderer.on('command-aliases-changed', callback)
+  },
   onShowPluginPlaceholder: (callback: () => void) => {
     ipcRenderer.on('show-plugin-placeholder', callback)
   },
@@ -561,6 +564,7 @@ declare global {
       onPluginsChanged: (callback: () => void) => void
       onAppsChanged: (callback: () => void) => void
       onLocalShortcutsChanged: (callback: () => void) => void
+      onCommandAliasesChanged: (callback: () => void) => void
       onShowPluginPlaceholder: (callback: () => void) => void
       onShowSettings: (callback: () => void) => void
       onAppLaunched: (callback: () => void) => void

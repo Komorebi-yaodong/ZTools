@@ -216,7 +216,9 @@ export class InternalPluginAPI {
           commandCount: normalizedCommandCount,
           aliasCount: normalizedAliasEntries.length
         })
-        commandsAPI.invalidateCommandsCache(true)
+        commandsAPI.invalidateCommandsCache(false)
+        // 只通知渲染进程刷新别名搜索索引，不触发系统应用扫描
+        this.mainWindow?.webContents.send('command-aliases-changed')
         console.log('[Internal] 指令缓存已失效并通知主窗口刷新 alias 搜索索引')
 
         return { success: true }

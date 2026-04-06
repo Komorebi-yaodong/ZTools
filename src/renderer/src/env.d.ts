@@ -176,6 +176,7 @@ declare global {
       onPluginsChanged: (callback: () => void) => void
       onAppsChanged: (callback: () => void) => void
       onLocalShortcutsChanged: (callback: () => void) => void
+      onCommandAliasesChanged: (callback: () => void) => void
       onHistoryChanged: (callback: () => void) => void
       onPinnedChanged: (callback: () => void) => void
       onSuperPanelPinnedChanged: (callback: () => void) => void

@@ -717,7 +717,8 @@ export class AppsAPI {
         // 已存在，更新使用时间和次数
         history[existingIndex].lastUsed = now
         history[existingIndex].useCount = (history[existingIndex].useCount || 0) + 1
-        // 更新可能变化的信息
+        // 更新可能变化的信息（包括 path，确保开发/生产模式切换后路径同步）
+        history[existingIndex].path = appInfo.path
         history[existingIndex].name = appInfo.name
         history[existingIndex].icon = appInfo.icon
         history[existingIndex].pluginName = appInfo.pluginName
