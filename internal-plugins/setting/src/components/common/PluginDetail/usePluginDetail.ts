@@ -16,6 +16,7 @@ export interface UsePluginDetailOptions {
   showComments?: boolean
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function usePluginDetail(options: UsePluginDetailOptions) {
   const { plugin, isRunning, showComments = false } = options
   const { success, error, confirm } = useToast()

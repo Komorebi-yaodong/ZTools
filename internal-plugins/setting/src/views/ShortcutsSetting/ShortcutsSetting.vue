@@ -1145,8 +1145,8 @@ useJumpFunction<ShortcutsSettingJumpFunction>(async (state) => {
     <Transition name="alias-slide" @after-enter="handleAliasDialogAfterEnter">
       <!-- alias 编辑面板 -->
       <AliasMappingDialog
-        ref="aliasDialogRef"
         v-if="showAliasEditor"
+        ref="aliasDialogRef"
         v-model:visible="aliasDialogVisible"
         :initial-state="aliasDialogState"
         :target-options="aliasTargetOptions"

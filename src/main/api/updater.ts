@@ -63,7 +63,7 @@ export class UpdaterAPI {
    */
   private startAutoCheck(): void {
     // 暂时关闭自动更新功能
-    let tempDisable = true
+    const tempDisable = true
     if (tempDisable) {
       console.log('[Updater] 自动检查更新已暂时关闭')
       return
@@ -391,7 +391,7 @@ export class UpdaterAPI {
    */
   public async checkUpdate(): Promise<any> {
     // 暂时关闭版本检查功能
-    let tempDisable = true
+    const tempDisable = true
     if (tempDisable) {
       console.log('[Updater] 开始检查更新... (已暂时关闭)')
       return { hasUpdate: false, latestVersion: app.getVersion(), currentVersion: app.getVersion() }
