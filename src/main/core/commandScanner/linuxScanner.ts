@@ -1,7 +1,7 @@
 import fs from 'fs/promises'
-import fsSync from 'fs'
 import path from 'path'
 import os from 'os'
+import { pinyin as getPinyin } from 'pinyin-pro'
 import { extractAcronym } from '../../utils/common'
 import { Command } from './types'
 import { pLimit } from './utils'
@@ -63,15 +63,21 @@ function getLocalizedName(entry: DesktopEntry): string {
   // 获取系统语言代码（如 "zh_CN"、"en_US"）
   const lang = process.env.LANG || process.env.LANGUAGE || ''
   const langCode = lang.split('.')[0] // 去掉编码部分 (UTF-8)
-  const langBase = langCode.split('_')[0] // 只取语言部分 (zh)
+  const parts = langCode.split('_')
+  const langBase = parts[0] // 只取语言部分 (zh)
 
   // 按优先级尝试本地化名称
-  const candidates = [
-    `Name[${langCode}]`, // Name[zh_CN]
-    `Name[${langBase}_${langCode.split('_')[1]}]`, // 同上，防御性写法
-    `Name[${langBase}]`, // Name[zh]
-    'Name' // 兜底
-  ]
+  const candidates: string[] = []
+  if (langCode) {
+    candidates.push(`Name[${langCode}]`)
+  }
+  if (parts.length > 1 && parts[1]) {
+    candidates.push(`Name[${langBase}_${parts[1]}]`) // 防御性写法
+  }
+  if (langBase) {
+    candidates.push(`Name[${langBase}]`) // Name[zh]
+  }
+  candidates.push('Name') // 兜底
 
   for (const key of candidates) {
     const value = entry[key]
@@ -120,8 +126,13 @@ const ICON_PREFERRED_SIZES = ['256x256', '128x128', '64x64', '48x48', '32x32', '
  */
 async function findIconPath(iconName: string): Promise<string | null> {
   // 如果是绝对路径且存在，直接返回
-  if (iconName.startsWith('/') && fsSync.existsSync(iconName)) {
-    return iconName
+  if (iconName.startsWith('/')) {
+    try {
+      await fs.access(iconName)
+      return iconName
+    } catch {
+      // 忽略
+    }
   }
 
   // 去除扩展名（.desktop 文件中有时会带扩展名）
@@ -132,14 +143,18 @@ async function findIconPath(iconName: string): Promise<string | null> {
   for (const searchPath of searchPaths) {
     // 先检查各个主题目录下的常用尺寸
     try {
-      const themes = await fs.readdir(searchPath)
+      const entries = await fs.readdir(searchPath, { withFileTypes: true })
+      const themes = entries.filter((e) => e.isDirectory()).map((e) => e.name)
       for (const theme of ['hicolor', ...themes]) {
         for (const size of ICON_PREFERRED_SIZES) {
           for (const category of ['apps', 'applications']) {
             for (const ext of ICON_EXTENSIONS) {
               const iconPath = path.join(searchPath, theme, size, category, baseName + ext)
-              if (fsSync.existsSync(iconPath)) {
+              try {
+                await fs.access(iconPath)
                 return iconPath
+              } catch {
+                // 忽略
               }
             }
           }
@@ -152,8 +167,11 @@ async function findIconPath(iconName: string): Promise<string | null> {
     // pixmaps 目录直接查找
     for (const ext of ICON_EXTENSIONS) {
       const iconPath = path.join(searchPath, baseName + ext)
-      if (fsSync.existsSync(iconPath)) {
+      try {
+        await fs.access(iconPath)
         return iconPath
+      } catch {
+        // 忽略
       }
     }
   }
@@ -165,182 +183,6 @@ async function findIconPath(iconName: string): Promise<string | null> {
 // 拼音首字母支持
 // ============================================================
 
-// 常用汉字 → 拼音首字母映射（每个 key 唯一）
-const PINYIN_MAP: Record<string, string> = {
-  微: 'w',
-  信: 'x',
-  浏: 'l',
-  览: 'l',
-  器: 'q',
-  网: 'w',
-  易: 'y',
-  邮: 'y',
-  件: 'j',
-  音: 'y',
-  乐: 'l',
-  视: 's',
-  频: 'p',
-  图: 't',
-  片: 'p',
-  文: 'w',
-  档: 'd',
-  办: 'b',
-  公: 'g',
-  计: 'j',
-  算: 's',
-  机: 'j',
-  设: 's',
-  置: 'z',
-  系: 'x',
-  统: 't',
-  终: 'z',
-  端: 'd',
-  管: 'g',
-  理: 'l',
-  火: 'h',
-  狐: 'h',
-  谷: 'g',
-  歌: 'g',
-  百: 'b',
-  度: 'd',
-  钟: 'z',
-  表: 'b',
-  历: 'l',
-  日: 'r',
-  相: 'x',
-  册: 'c',
-  游: 'y',
-  戏: 'x',
-  下: 'x',
-  载: 'z',
-  安: 'a',
-  装: 'z',
-  卸: 'x',
-  软: 'r',
-  接: 'j',
-  打: 'd',
-  印: 'y',
-  扫: 's',
-  描: 'm',
-  录: 'l',
-  屏: 'p',
-  远: 'y',
-  程: 'c',
-  桌: 'z',
-  面: 'm',
-  虚: 'x',
-  拟: 'n',
-  输: 's',
-  法: 'f',
-  字: 'z',
-  典: 'd',
-  电: 'd',
-  话: 'h',
-  通: 't',
-  讯: 'x',
-  聊: 'l',
-  天: 't',
-  地: 'd',
-  画: 'h',
-  编: 'b',
-  辑: 'j',
-  开: 'k',
-  发: 'f',
-  工: 'g',
-  具: 'j',
-  数: 's',
-  据: 'j',
-  库: 'k',
-  服: 'f',
-  务: 'w',
-  调: 'd',
-  试: 's',
-  代: 'd',
-  码: 'm',
-  源: 'y',
-  本: 'b',
-  备: 'b',
-  份: 'f',
-  恢: 'h',
-  复: 'f',
-  优: 'y',
-  化: 'h',
-  清: 'q',
-  洁: 'j',
-  分: 'f',
-  析: 'x',
-  监: 'j',
-  控: 'k',
-  性: 'x',
-  能: 'n',
-  加: 'j',
-  速: 's',
-  压: 'y',
-  缩: 's',
-  解: 'j',
-  密: 'm',
-  转: 'z',
-  换: 'h',
-  格: 'g',
-  式: 's',
-  阅: 'y',
-  读: 'd',
-  播: 'b',
-  放: 'f',
-  全: 'q',
-  防: 'f',
-  护: 'h',
-  墙: 'q',
-  翻: 'f',
-  译: 'y',
-  助: 'z',
-  手: 's',
-  笔: 'b',
-  记: 'j',
-  板: 'b',
-  制: 'z',
-  作: 'z',
-  创: 'c',
-  意: 'y',
-  原: 'y',
-  型: 'x',
-  演: 'y',
-  示: 's',
-  幻: 'h',
-  灯: 'd',
-  看: 'k',
-  语: 'y',
-  账: 'z',
-  单: 'd',
-  存: 'c',
-  夹: 'j',
-  连: 'l',
-  络: 'l',
-  蓝: 'l',
-  牙: 'y',
-  无: 'w',
-  线: 'x',
-  耳: 'e',
-  摄: 's',
-  像: 'x',
-  头: 't',
-  筒: 't',
-  量: 'l',
-  均: 'j',
-  衡: 'h',
-  混: 'h',
-  新: 'x',
-  闻: 'w',
-  订: 'd',
-  收: 's',
-  藏: 'c',
-  辞: 'c',
-  词: 'c',
-  白: 'b',
-  列: 'l',
-  注: 'z'
-}
-
 /**
  * 提取中文字符串的拼音首字母
  * 例如：「微信」→「wx」，「谷歌浏览器」→「gglq」
@@ -349,7 +191,11 @@ function extractPinyinAcronym(name: string): string {
   let result = ''
   for (const char of name) {
     if (/[\u4e00-\u9fa5]/.test(char)) {
-      result += PINYIN_MAP[char] || ''
+      try {
+        result += getPinyin(char, { pattern: 'first', toneType: 'none' })
+      } catch {
+        // 忽略
+      }
     } else if (/[a-zA-Z]/.test(char)) {
       result += char.toLowerCase()
     }
