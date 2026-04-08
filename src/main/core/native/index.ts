@@ -1,20 +1,21 @@
 import os from 'os'
 import { execSync } from 'child_process'
 import { clipboard } from 'electron'
+import macZToolsNative from '../../../../resources/lib/mac/ztools_native.node?asset'
+import winZToolsNative from '../../../../resources/lib/win/ztools_native.node?asset'
 
 // 根据平台加载对应的原生模块
+// 注意：?asset 导入是 Vite 构建期转换，只能做静态导入（得到路径字符串）
+// 真正的模块加载在下方 require() 中，按平台各自加载，Linux 不加载任何原生模块
 const platform = os.platform()
 
-// Linux 平台不加载 .node 原生模块（避免 ELF 格式错误）
-// 其他平台按需加载对应的原生模块
 let addon: any = null
-if (platform !== 'linux') {
+if (platform === 'darwin') {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const macZToolsNative = require('../../../../resources/lib/mac/ztools_native.node?asset')
+  addon = require(macZToolsNative)
+} else if (platform === 'win32') {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const winZToolsNative = require('../../../../resources/lib/win/ztools_native.node?asset')
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  addon = require(platform === 'darwin' ? macZToolsNative : winZToolsNative)
+  addon = require(winZToolsNative)
 }
 
 // 原生模块接口类型定义
