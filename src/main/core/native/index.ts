@@ -1,5 +1,5 @@
 import os from 'os'
-import { execSync } from 'child_process'
+import { execSync, spawnSync } from 'child_process'
 import { clipboard } from 'electron'
 import macZToolsNative from '../../../../resources/lib/mac/ztools_native.node?asset'
 import winZToolsNative from '../../../../resources/lib/win/ztools_native.node?asset'
@@ -319,16 +319,16 @@ export class WindowManager {
             const parts = line.split(/\s+/).filter(Boolean)
             if (parts.length >= 3 && parts[2] === identifier.toString()) {
               const wid = parts[0]
-              execSync(`wmctrl -ia ${wid}`)
+              spawnSync('wmctrl', ['-ia', wid])
               break
             }
           }
         } else if (typeof identifier === 'string' && identifier.startsWith('0x')) {
           // 如果是窗口 ID
-          execSync(`wmctrl -ia ${identifier}`)
+          spawnSync('wmctrl', ['-ia', identifier])
         } else {
           // 如果是字符串，尝试按标题/类名激活
-          execSync(`wmctrl -a "${identifier}"`)
+          spawnSync('wmctrl', ['-a', identifier])
         }
         return true
       } catch (e) {

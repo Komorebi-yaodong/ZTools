@@ -44,8 +44,8 @@ export async function launchApp(
             try {
               // 检查该进程的可执行文件是否匹配
               const exePath = fs.readlinkSync(`/proc/${pid}/exe`)
-              // 检查路径是否匹配（考虑到软链接或相对路径，这里做包含检查或者绝对路径对比）
-              if (exePath === appPath) {
+              // 检查路径是否匹配（考虑到软链接或相对路径，对比真实绝对路径）
+              if (exePath === fs.realpathSync(appPath)) {
                 console.log(`[Launcher] 发现应用已运行 (PID: ${pid}), 尝试通过 WID ${wid} 激活窗口`)
                 WindowManager.activateWindow(wid)
                 return resolve(true)
