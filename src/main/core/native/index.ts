@@ -323,6 +323,9 @@ export class WindowManager {
               break
             }
           }
+        } else if (typeof identifier === 'string' && identifier.startsWith('0x')) {
+          // 如果是窗口 ID
+          execSync(`wmctrl -ia ${identifier}`)
         } else {
           // 如果是字符串，尝试按标题/类名激活
           execSync(`wmctrl -a "${identifier}"`)

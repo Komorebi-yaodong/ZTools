@@ -61,7 +61,7 @@ export async function executeSystemCommand(
       } else if (platform === 'win32') {
         cmd = 'shutdown /l'
       } else if (platform === 'linux') {
-        cmd = 'gnome-session-quit --logout --no-prompt || pkill -u $USER'
+        cmd = 'gnome-session-quit --logout --no-prompt'
       }
       break
 
