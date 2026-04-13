@@ -9,6 +9,7 @@ import lmdbInstance from './lmdb/lmdbInstance'
 import devToolsShortcut, { getDevToolsMode } from '../utils/devToolsShortcut'
 import { WINDOW_WIDTH } from '../common/constants'
 import { registerExternalLinkInterceptor } from '../managers/pluginManager'
+import pluginWindowManager from './pluginWindowManager'
 import { getDetachedWindowSizeKey } from '../../shared/pluginRuntimeNamespace'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -278,6 +279,8 @@ class DetachedWindowManager {
           clearTimeout(timer)
           this.resizeSaveTimers.delete(windowId)
         }
+        // 关闭该插件通过 createBrowserWindow 创建的所有独立窗口
+        pluginWindowManager.closeByPlugin(pluginPath)
         // 销毁插件视图的 webContents
         if (!pluginView.webContents.isDestroyed()) {
           pluginView.webContents.close()
